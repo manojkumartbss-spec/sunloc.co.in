@@ -1,0 +1,58 @@
+services:
+  sunloc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sunloc-server-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_PATH=/app/data/sunloc.db
+    volumes:
+      # Bind mount for hot reload of source code
+      - ./server.js:/app/server.js
+      - ./sunloc-api-client.js:/app/sunloc-api-client.js
+      - ./public:/app/public
+      # Persist database across container restarts
+      - sunloc-db-data:/app/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=sunloc-server,env=development"
+    develop:
+      watch:
+        - action: sync
+          path: ./server.js
+          target: /app/server.js
+        - action: sync
+          path: ./sunloc-api-client.js
+          target: /app/sunloc-api-client.js
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: rebuild
+          path: ./package.json
+          target: /app/package.json
+
+volumes:
+  sunloc-db-data:
+    driver: local

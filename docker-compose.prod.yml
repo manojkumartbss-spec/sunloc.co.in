@@ -1,0 +1,67 @@
+services:
+  sunloc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - type=registry,ref=sunloc:buildcache
+    image: sunloc:latest
+    container_name: sunloc-server
+    pull_policy: never
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_PATH=/app/data/sunloc.db
+    volumes:
+      # Persist SQLite database and WAL files
+      - sunloc-db-data:/app/data
+    restart: unless-stopped
+    # Security: run as unprivileged user (configured in Dockerfile)
+    user: nodejs:nodejs
+    # Note: read_only_root_filesystem requires docker run --read-only or runtime config
+    # For Docker Compose, use security_opt or cap_drop instead
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /tmp
+      - /app/node_modules/.cache
+    # Resource limits prevent runaway memory/CPU consumption
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    # Health check ensures the service is available
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    # Structured logging for centralized log aggregation
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=sunloc-server,env=production,version=1.0"
+    # For multi-container setups
+    networks:
+      - default
+
+volumes:
+  sunloc-db-data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

@@ -1,0 +1,7 @@
+# Docker buildx configuration for faster builds using BuildKit
+# Usage: docker buildx build -t sunloc-server:latest . --progress=plain
+
+# For M1/M2 Macs and cross-platform builds, add this to your docker-compose.yml:
+# services:
+#   sunloc-server:
+#     platform: linux/amd64  # or linux/arm64 for native Apple Silicon

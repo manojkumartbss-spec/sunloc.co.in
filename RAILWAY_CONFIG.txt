@@ -1,0 +1,34 @@
+# Railway Service Configuration
+# This tells Railway how to build and deploy your Sunloc Server
+
+# The service should be configured to use:
+# - Builder: Dockerfile
+# - Dockerfile path: ./Dockerfile (default)
+# - Build command: automatic (uses Dockerfile RUN commands)
+# - Start command: node server.js
+
+# Environment Variables to set in Railway Dashboard:
+# NODE_ENV=production
+# PORT=3000
+# DB_PATH=/app/data/sunloc.db
+
+# Port: 3000 (exposed in Dockerfile)
+
+# How to configure in Railway Dashboard:
+# 1. Click your "sunloc.co.in" service
+# 2. Click Settings (gear icon)
+# 3. Scroll to "Builder" section
+# 4. Select "Dockerfile" as builder type
+# 5. Dockerfile path: ./Dockerfile (already set by default)
+# 6. Click "Deploy" button
+# 7. Wait for build to complete
+
+# Your project has:
+# ✅ Dockerfile - multi-stage optimized build
+# ✅ package.json - Node.js dependencies
+# ✅ server.js - Express app entry point
+# ✅ .dockerignore - optimized build context
+# ✅ railway.json - build configuration
+# ✅ Procfile - process definition
+
+# Railway should auto-detect and build successfully now.
